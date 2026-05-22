@@ -10,32 +10,39 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0a0a0a"
+      "backgroundColor": "#1a0d0a"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.gofromspace.gg",
       "infoPlist": {
-        "NSUserNotificationUsageDescription": "GG sends you scheduled wellness reminders."
+        "NSUserNotificationUsageDescription": "GG sends you scheduled wellness reminders.",
+        "NSFaceIDUsageDescription": "GG uses Face ID to keep your sessions private."
       }
     },
     "android": {
+      "supportsTablet": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "monochromeImage": "./assets/adaptive-icon-monochrome.png",
-        "backgroundColor": "#0a0a0a"
+        "backgroundColor": "#1a0d0a"
       },
       "package": "com.gofromspace.gg",
-      "backgroundColor": "#0a0a0a",
-      "permissions": ["RECEIVE_BOOT_COMPLETED", "SCHEDULE_EXACT_ALARM"]
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
+      ]
     },
     "plugins": [
       "expo-router",
+      "expo-local-authentication",
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon.png",
-          "color": "#0a0a0a",
+          "icon": "./assets/adaptive-icon-monochrome.png",
+          "color": "#1a0d0a",
           "sounds": []
         }
       ]
