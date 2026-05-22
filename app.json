@@ -25,6 +25,7 @@
         "backgroundColor": "#0a0a0a"
       },
       "package": "com.gofromspace.gg",
+      "backgroundColor": "#0a0a0a",
       "permissions": ["RECEIVE_BOOT_COMPLETED", "SCHEDULE_EXACT_ALARM"]
     },
     "plugins": [

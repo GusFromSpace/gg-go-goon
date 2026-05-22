@@ -49,10 +49,11 @@ export const notificationService = {
         date.setDate(date.getDate() + day);
         date.setHours(settings.windowStart + (i * settings.frequencyHours), 0, 0, 0);
 
+        const fifteenMinutes = 15 * 60 * 1000;
         if (
           date.getHours() >= settings.windowStart &&
           date.getHours() < settings.windowEnd &&
-          date > now
+          date.getTime() > now.getTime() + fifteenMinutes
         ) {
           scheduledDates.push(date);
         }
