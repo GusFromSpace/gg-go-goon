@@ -1,48 +1,30 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Switch, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, Switch, TouchableOpacity, StyleSheet, ScrollView, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { storage } from '@/services/storage';
 import { notificationService } from '@/services/notifications';
-import { revenueCat } from '@/services/revenuecat';
-import type { NotificationSettings, SubscriptionState } from '@/types';
+import type { NotificationSettings } from '@/types';
+
+const SUPPORT_URL = 'https://buymeacoffee.com/gusfromspace';
 
 const FREQUENCY_OPTIONS = [
   { label: 'Every 4 hours', value: 4 },
   { label: 'Every 8 hours', value: 8 },
-  { label: 'Once a day', value: 24 },
   { label: 'Twice a day', value: 12 },
+  { label: 'Once a day', value: 24 },
 ];
 
 export default function Settings() {
   const [notifSettings, setNotifSettings] = useState<NotificationSettings | null>(null);
-  const [subscription, setSubscription] = useState<SubscriptionState>({ isFindom: false, expiresAt: null });
 
   useEffect(() => {
     storage.getNotificationSettings().then(setNotifSettings);
-    storage.getSubscription().then(setSubscription);
-    revenueCat.syncSubscriptionState().then(() =>
-      storage.getSubscription().then(setSubscription)
-    );
   }, []);
 
   async function updateSettings(updated: NotificationSettings) {
     setNotifSettings(updated);
     await storage.saveNotificationSettings(updated);
     await notificationService.scheduleAll(updated);
-  }
-
-  async function handleFindom() {
-    if (subscription.isFindom) {
-      Alert.alert('Commitment Tier', 'You are already committed. Thank you for your service.');
-      return;
-    }
-    const ok = await revenueCat.purchaseFindom();
-    if (ok) {
-      setSubscription({ isFindom: true, expiresAt: null });
-      Alert.alert('GG', 'Commitment activated. You know what you did.');
-    } else {
-      Alert.alert('Cancelled', 'No commitment made.');
-    }
   }
 
   if (!notifSettings) return null;
@@ -86,20 +68,15 @@ export default function Settings() {
         )}
       </Section>
 
-      <Section label="Commitment Tier">
-        <Text style={s.findomDesc}>
-          Monthly recurring charge. No features. No content. The commitment is the point.
+      <Section label="Support the Dev">
+        <Text style={s.supportDesc}>
+          GG is free. If it's brought value to your life — you know what kind — consider buying the dev a coffee.
         </Text>
         <TouchableOpacity
-          style={[s.findomBtn, subscription.isFindom && s.findomBtnActive]}
-          onPress={handleFindom}
+          style={s.supportBtn}
+          onPress={() => Linking.openURL(SUPPORT_URL)}
         >
-          <Text style={[s.findomBtnText, subscription.isFindom && s.findomBtnTextActive]}>
-            {subscription.isFindom ? 'COMMITTED ✓' : 'COMMIT MONTHLY'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => revenueCat.restorePurchases()} style={s.restoreBtn}>
-          <Text style={s.restoreText}>Restore Purchase</Text>
+          <Text style={s.supportBtnText}>☕ Buy Me a Coffee</Text>
         </TouchableOpacity>
       </Section>
 
@@ -147,13 +124,9 @@ const s = StyleSheet.create({
   optionRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#1a1a1a' },
   optionLabel: { fontSize: 15, color: '#ccc' },
   check: { fontSize: 15, color: '#fff' },
-  findomDesc: { fontSize: 14, color: '#555', lineHeight: 20, marginBottom: 20 },
-  findomBtn: { borderWidth: 1, borderColor: '#fff', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginBottom: 12 },
-  findomBtnActive: { backgroundColor: '#fff' },
-  findomBtnText: { fontSize: 14, fontWeight: '700', color: '#fff', letterSpacing: 1 },
-  findomBtnTextActive: { color: '#0a0a0a' },
-  restoreBtn: { alignItems: 'center', paddingVertical: 8 },
-  restoreText: { fontSize: 13, color: '#444' },
+  supportDesc: { fontSize: 14, color: '#555', lineHeight: 20, marginBottom: 20 },
+  supportBtn: { borderWidth: 1, borderColor: '#fff', borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
+  supportBtnText: { fontSize: 14, fontWeight: '700', color: '#fff', letterSpacing: 1 },
   link: { fontSize: 15, color: '#888', paddingVertical: 8 },
   legal: { fontSize: 12, color: '#333', marginTop: 16, lineHeight: 18 },
 });
