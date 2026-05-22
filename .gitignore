@@ -1,0 +1,13 @@
+node_modules/
+# lockfile is intentionally committed - do not add package-lock.json here
+.expo/
+dist/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+.env
+.env.local
