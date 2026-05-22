@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import * as SystemUI from 'expo-system-ui';
@@ -13,42 +13,48 @@ const BG = '#0a0a0a';
 SplashScreen.preventAutoHideAsync();
 SystemUI.setBackgroundColorAsync(BG);
 
+type AppState = 'loading' | 'onboarding-age' | 'onboarding-tos' | 'ready';
+
 export default function RootLayout() {
-  const [ready, setReady] = useState(false);
+  const [appState, setAppState] = useState<AppState>('loading');
+  const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
     async function init() {
-      await revenueCat.init();
+      try { await revenueCat.init(); } catch {}
+
       const ageOk = await storage.isAgeVerified();
       const tosOk = await storage.isTosAccepted();
+
       await SplashScreen.hideAsync();
-      setReady(true);
 
       if (!ageOk) {
-        router.replace('/onboarding/age-gate');
+        setAppState('onboarding-age');
       } else if (!tosOk) {
-        router.replace('/onboarding/tos');
+        setAppState('onboarding-tos');
+      } else {
+        setAppState('ready');
       }
     }
     init();
   }, []);
 
-  if (!ready) return (
-    <View style={s.root} />
-  );
+  useEffect(() => {
+    if (appState === 'loading') return;
+    if (appState === 'onboarding-age') {
+      router.replace('/onboarding/age-gate');
+    } else if (appState === 'onboarding-tos') {
+      router.replace('/onboarding/tos');
+    } else if (appState === 'ready') {
+      router.replace('/');
+    }
+  }, [appState]);
 
   return (
     <SafeAreaProvider style={s.root}>
       <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: BG },
-          headerTintColor: '#fff',
-          contentStyle: { backgroundColor: BG },
-          headerShown: false,
-          animation: 'fade',
-        }}
-      />
+      <Slot />
     </SafeAreaProvider>
   );
 }
