@@ -232,7 +232,7 @@ export default function Home() {
                       s.pip,
                       pip.hasSession && s.pipFilled,
                       pip.isToday && s.pipToday,
-                      pip.isGrace && s.pipGrace,
+                      !!pip.isGrace && s.pipGrace,
                     ]} />
                     <Text style={s.pipLabel}>{DAYS[i]}</Text>
                   </View>

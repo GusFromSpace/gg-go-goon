@@ -17,7 +17,7 @@ export default function Welcome2() {
         <Text style={s.art}>7 🔥</Text>
         <View style={s.pipRow}>
           {[1,1,1,0,1,1,1].map((filled, i) => (
-            <View key={i} style={[s.pip, filled && s.pipFilled, i === 3 && s.pipSkip]} />
+            <View key={i} style={[s.pip, !!filled && s.pipFilled, i === 3 && s.pipSkip]} />
           ))}
         </View>
         <Text style={s.heading}>The streak matters.</Text>
