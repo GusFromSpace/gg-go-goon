@@ -7,7 +7,7 @@ const API_KEYS = {
   android: process.env.EXPO_PUBLIC_RC_ANDROID ?? '',
 };
 
-export const FINDOM_PRODUCT_ID = 'gg_findom_weekly';
+export const FINDOM_PRODUCT_ID = 'gg_findom_monthly';
 
 export const revenueCat = {
   async init(): Promise<void> {

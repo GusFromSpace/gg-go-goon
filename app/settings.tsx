@@ -88,14 +88,14 @@ export default function Settings() {
 
       <Section label="Commitment Tier">
         <Text style={s.findomDesc}>
-          Weekly recurring charge. No features. No content. The commitment is the point.
+          Monthly recurring charge. No features. No content. The commitment is the point.
         </Text>
         <TouchableOpacity
           style={[s.findomBtn, subscription.isFindom && s.findomBtnActive]}
           onPress={handleFindom}
         >
           <Text style={[s.findomBtnText, subscription.isFindom && s.findomBtnTextActive]}>
-            {subscription.isFindom ? 'COMMITTED ✓' : 'COMMIT WEEKLY'}
+            {subscription.isFindom ? 'COMMITTED ✓' : 'COMMIT MONTHLY'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => revenueCat.restorePurchases()} style={s.restoreBtn}>
