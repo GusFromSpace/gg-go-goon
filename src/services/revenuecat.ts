@@ -3,8 +3,8 @@ import { Platform } from 'react-native';
 import { storage } from './storage';
 
 const API_KEYS = {
-  ios: 'appl_REPLACE_ME',
-  android: 'goog_REPLACE_ME',
+  ios: process.env.EXPO_PUBLIC_RC_IOS ?? '',
+  android: process.env.EXPO_PUBLIC_RC_ANDROID ?? '',
 };
 
 export const FINDOM_PRODUCT_ID = 'gg_findom_weekly';
