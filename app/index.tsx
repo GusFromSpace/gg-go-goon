@@ -5,6 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { storage } from '@/services/storage';
 import { notificationService } from '@/services/notifications';
 import { RECIPE_SUGGESTIONS } from '@/content/summons';
+import { ScreenBlush } from '@/components/ScreenBlush';
 import type { AppStats } from '@/types';
 
 const C = {
@@ -100,7 +101,6 @@ export default function Home() {
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulse = useRef(new Animated.Value(1)).current;
-  const blush = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     storage.getStats().then(setStats);
@@ -133,16 +133,6 @@ export default function Home() {
     setElapsed(0);
   }
 
-  function triggerBlush(intensity: number, duration: number) {
-    blush.setValue(0);
-    Animated.sequence([
-      Animated.timing(blush, { toValue: intensity, duration: 600, useNativeDriver: true }),
-      Animated.timing(blush, { toValue: intensity * 0.7, duration: 200, useNativeDriver: true }),
-      Animated.timing(blush, { toValue: intensity, duration: 300, useNativeDriver: true }),
-      Animated.timing(blush, { toValue: 0, duration, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-    ]).start();
-  }
-
   async function handleDone() {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setPhase('done');
@@ -154,10 +144,8 @@ export default function Home() {
 
     if (quick) {
       setEggMsg(QUICK_FINISH[Math.floor(Math.random() * QUICK_FINISH.length)]);
-      triggerBlush(0.18, 2800); // embarrassed flush
     } else if (marathon) {
       setEggMsg(LONG_RUN[Math.floor(Math.random() * LONG_RUN.length)]);
-      triggerBlush(0.22, 4000); // hot and sweaty
     }
 
     if (quick) {
@@ -245,11 +233,13 @@ export default function Home() {
 
   return (
     <View style={s.container}>
-      {/* Blush overlay — embarrassment or exertion */}
-      <Animated.View
-        pointerEvents="none"
-        style={[s.blushOverlay, { opacity: blush }]}
-      />
+      {/* Blush — quick finish: flash variant; marathon: steady pulse */}
+      {phase === 'done' && showSavePrompt && (
+        <ScreenBlush variant="flash" intensity="spicy" />
+      )}
+      {phase === 'done' && isMarathon && (
+        <ScreenBlush variant="pulse" intensity="medium" />
+      )}
       {/* Grace banner */}
       {showGraceBanner && (
         <View style={s.graceBanner}>
@@ -472,11 +462,6 @@ const s = StyleSheet.create({
   mainArea: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 20 },
 
   timer: { fontSize: 80, fontWeight: '200', color: C.cream, letterSpacing: 4, fontVariant: ['tabular-nums'] },
-
-  blushOverlay: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: '#ff3a6e', zIndex: 10, pointerEvents: 'none',
-  },
 
   doneArea: { alignItems: 'center', gap: 8 },
   doneText: { fontSize: 64, fontWeight: '900', color: C.peach },
