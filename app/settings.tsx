@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Switch, TouchableOpacity, StyleSheet, ScrollView, Modal, Linking, Alert } from 'react-native';
+import { View, Text, Switch, TouchableOpacity, StyleSheet, ScrollView, Modal, Alert } from 'react-native';
 import { router } from 'expo-router';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { storage } from '@/services/storage';
@@ -16,8 +16,6 @@ const C = {
   muted:    '#9a8270',
   faint:    '#5a4a3c',
 };
-
-const SUPPORT_URL = 'https://buymeacoffee.com/gusfromspace';
 
 const FREQ_OPTIONS = [
   { label: 'Every 4 hours', value: 4 },
@@ -123,13 +121,6 @@ export default function Settings() {
         <Text style={s.rowSub}>Use device biometric or PIN on launch.</Text>
       </Section>
 
-      <Section label="Support">
-        <TouchableOpacity style={s.supportRow} onPress={() => Linking.openURL(SUPPORT_URL)}>
-          <Text style={s.supportLabel}>Buy me a coffee</Text>
-          <Text style={s.arrow}>↗</Text>
-        </TouchableOpacity>
-      </Section>
-
       <Section label="Legal">
         <TouchableOpacity onPress={() => router.push('/onboarding/tos')}>
           <Text style={s.link}>Terms of Service</Text>
@@ -213,10 +204,6 @@ const s = StyleSheet.create({
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   rowValue: { fontSize: 14, color: C.muted },
   chevron: { fontSize: 18, color: C.faint },
-  supportRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 14, backgroundColor: C.bg2, paddingHorizontal: 16 },
-  supportLabel: { fontSize: 15, color: C.cream },
-  arrow: { fontSize: 16, color: C.peach },
   link: { fontSize: 15, color: C.muted, paddingVertical: 8 },
   legal: { fontSize: 12, color: C.faint, marginTop: 8, lineHeight: 18 },
 });
