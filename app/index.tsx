@@ -24,6 +24,30 @@ type Phase = 'idle' | 'active' | 'done';
 const DAYS = ['M','T','W','T','F','S','S'];
 const H = 3600000;
 
+const QUICK_FINISH = [
+  'some people find it flattering...',
+  'that\'s it?',
+  '...ok',
+  'new record.',
+  'efficiency mode unlocked.',
+  'bold of you to share that.',
+  'blink and you\'d miss it.',
+  'we won\'t tell anyone.',
+  'some call it a gift.',
+  'quality over quantity, allegedly.',
+];
+
+const LONG_RUN = [
+  'ok we\'re genuinely impressed.',
+  'you ok in there?',
+  'the dedication is noted.',
+  'marathon mode: achieved.',
+  'committed. truly.',
+  'someone get this person some water.',
+  'historians will write about this.',
+  'we weren\'t worried. we were a little worried.',
+];
+
 // Fireworks particle
 function Particle({ angle, radius, delay }: { angle: number; radius: number; delay: number }) {
   const anim = useRef(new Animated.Value(0)).current;
@@ -73,8 +97,11 @@ export default function Home() {
   const [showFireworks, setShowFireworks] = useState(false);
   const [recipe, setRecipe] = useState<string | null>(null);
   const [graceDismissed, setGraceDismissed] = useState(false);
+  const [eggMsg, setEggMsg] = useState<string | null>(null);
+  const [isMarathon, setIsMarathon] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulse = useRef(new Animated.Value(1)).current;
+  const blush = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     storage.getStats().then(setStats);
@@ -107,16 +134,40 @@ export default function Home() {
     setElapsed(0);
   }
 
+  function triggerBlush(intensity: number, duration: number) {
+    blush.setValue(0);
+    Animated.sequence([
+      Animated.timing(blush, { toValue: intensity, duration: 600, useNativeDriver: true }),
+      Animated.timing(blush, { toValue: intensity * 0.7, duration: 200, useNativeDriver: true }),
+      Animated.timing(blush, { toValue: intensity, duration: 300, useNativeDriver: true }),
+      Animated.timing(blush, { toValue: 0, duration, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+    ]).start();
+  }
+
   async function handleDone() {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setPhase('done');
-    setShowFireworks(true);
-    if (Math.random() < 0.25) {
+
+    const quick = elapsed < 10;
+    const marathon = elapsed >= 3600;
+
+    setIsMarathon(marathon);
+
+    if (quick) {
+      setEggMsg(QUICK_FINISH[Math.floor(Math.random() * QUICK_FINISH.length)]);
+      triggerBlush(0.18, 2800); // embarrassed flush
+    } else if (marathon) {
+      setEggMsg(LONG_RUN[Math.floor(Math.random() * LONG_RUN.length)]);
+      triggerBlush(0.22, 4000); // hot and sweaty
+    }
+
+    setShowFireworks(!quick); // no confetti for the speed run, that would be insulting
+    if (Math.random() < 0.25 && !quick) {
       setRecipe(RECIPE_SUGGESTIONS[Math.floor(Math.random() * RECIPE_SUGGESTIONS.length)]);
     }
     const updated = await storage.recordSession(elapsed);
     setStats(updated);
-    setTimeout(() => setShowFireworks(false), 1500);
+    if (!quick) setTimeout(() => setShowFireworks(false), 1500);
   }
 
   async function handleReset() {
@@ -124,6 +175,8 @@ export default function Home() {
     setPhase('idle');
     setElapsed(0);
     setRecipe(null);
+    setEggMsg(null);
+    setIsMarathon(false);
   }
 
   function formatTime(s: number) {
@@ -172,6 +225,11 @@ export default function Home() {
 
   return (
     <View style={s.container}>
+      {/* Blush overlay — embarrassment or exertion */}
+      <Animated.View
+        pointerEvents="none"
+        style={[s.blushOverlay, { opacity: blush }]}
+      />
       {/* Grace banner */}
       {showGraceBanner && (
         <View style={s.graceBanner}>
@@ -262,7 +320,11 @@ export default function Home() {
           <View style={s.doneArea}>
             {showFireworks && <FireworksBurst />}
             <Text style={s.doneText}>GG.</Text>
+            {isMarathon && <Text style={s.marathonBadge}>💦 😳 💦</Text>}
             <Text style={s.doneSubtitle}>Good game. Streak: {stats?.streak ?? 1} days 🔥</Text>
+            {eggMsg && (
+              <Text style={s.eggMsg}>{eggMsg}</Text>
+            )}
             {recipe && (
               <View style={s.recipeCard}>
                 <Text style={s.recipeLabel}>COOKING TIP</Text>
@@ -343,9 +405,17 @@ const s = StyleSheet.create({
 
   timer: { fontSize: 80, fontWeight: '200', color: C.cream, letterSpacing: 4, fontVariant: ['tabular-nums'] },
 
+  blushOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: '#ff3a6e', zIndex: 10, pointerEvents: 'none',
+  },
+
   doneArea: { alignItems: 'center', gap: 8 },
   doneText: { fontSize: 64, fontWeight: '900', color: C.peach },
+  marathonBadge: { fontSize: 28, letterSpacing: 4 },
   doneSubtitle: { fontSize: 16, color: C.muted },
+  eggMsg: { fontSize: 14, color: C.faint, fontStyle: 'italic', textAlign: 'center',
+    maxWidth: 240, marginTop: 4 },
   recipeCard: { marginTop: 16, borderWidth: 1, borderColor: C.peach, borderRadius: 12,
     padding: 16, maxWidth: 280, backgroundColor: C.bg2 },
   recipeLabel: { fontSize: 10, color: C.peach, letterSpacing: 1.5, fontWeight: '700', marginBottom: 6 },
