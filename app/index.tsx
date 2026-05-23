@@ -25,16 +25,14 @@ const DAYS = ['M','T','W','T','F','S','S'];
 const H = 3600000;
 
 const QUICK_FINISH = [
-  'some people find it flattering...',
-  'that\'s it?',
-  '...ok',
-  'new record.',
-  'efficiency mode unlocked.',
-  'bold of you to share that.',
-  'blink and you\'d miss it.',
-  'we won\'t tell anyone.',
-  'some call it a gift.',
-  'quality over quantity, allegedly.',
+  'done so soon?',
+  'oh my.',
+  'already?',
+  '...bless.',
+  'that was quick.',
+  'a personal record, perhaps.',
+  'efficiency is a virtue.',
+  'we don\'t judge.',
 ];
 
 const LONG_RUN = [
@@ -99,6 +97,7 @@ export default function Home() {
   const [graceDismissed, setGraceDismissed] = useState(false);
   const [eggMsg, setEggMsg] = useState<string | null>(null);
   const [isMarathon, setIsMarathon] = useState(false);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulse = useRef(new Animated.Value(1)).current;
   const blush = useRef(new Animated.Value(0)).current;
@@ -161,16 +160,30 @@ export default function Home() {
       triggerBlush(0.22, 4000); // hot and sweaty
     }
 
-    setShowFireworks(!quick); // no confetti for the speed run, that would be insulting
-    if (Math.random() < 0.25 && !quick) {
-      setRecipe(RECIPE_SUGGESTIONS[Math.floor(Math.random() * RECIPE_SUGGESTIONS.length)]);
-    }
-    if (!quick) {
-      // sub-10s doesn't count — easter egg fires but nothing is recorded
+    if (quick) {
+      setShowSavePrompt(true); // ask before recording
+    } else {
+      setShowFireworks(true);
+      if (Math.random() < 0.25) {
+        setRecipe(RECIPE_SUGGESTIONS[Math.floor(Math.random() * RECIPE_SUGGESTIONS.length)]);
+      }
       const updated = await storage.recordSession(elapsed);
       setStats(updated);
       setTimeout(() => setShowFireworks(false), 1500);
     }
+  }
+
+  async function handleSaveQuick() {
+    setShowSavePrompt(false);
+    const updated = await storage.recordSession(elapsed);
+    setStats(updated);
+  }
+
+  function handleDiscardQuick() {
+    setShowSavePrompt(false);
+    setPhase('idle');
+    setElapsed(0);
+    setEggMsg(null);
   }
 
   async function handleReset() {
@@ -180,6 +193,7 @@ export default function Home() {
     setRecipe(null);
     setEggMsg(null);
     setIsMarathon(false);
+    setShowSavePrompt(false);
   }
 
   function formatTime(s: number) {
@@ -345,6 +359,19 @@ export default function Home() {
             {eggMsg && (
               <Text style={s.eggMsg}>{eggMsg}</Text>
             )}
+            {showSavePrompt && (
+              <View style={s.savePrompt}>
+                <Text style={s.saveLabel}>save it?</Text>
+                <View style={s.saveRow}>
+                  <TouchableOpacity style={s.saveYes} onPress={handleSaveQuick}>
+                    <Text style={s.saveYesText}>yes</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={s.saveNo} onPress={handleDiscardQuick}>
+                    <Text style={s.saveNoText}>no</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
             {recipe && (
               <View style={s.recipeCard}>
                 <Text style={s.recipeLabel}>COOKING TIP</Text>
@@ -428,6 +455,16 @@ const s = StyleSheet.create({
   todayLabel: { fontSize: 14, color: C.muted },
 
   doneTodayCount: { fontSize: 14, color: C.peach, fontWeight: '700', marginTop: 2 },
+
+  savePrompt: { alignItems: 'center', gap: 12, marginTop: 8 },
+  saveLabel: { fontSize: 15, color: C.muted, fontStyle: 'italic' },
+  saveRow: { flexDirection: 'row', gap: 12 },
+  saveYes: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: 10,
+    borderWidth: 1, borderColor: C.peach },
+  saveYesText: { fontSize: 14, fontWeight: '700', color: C.peach },
+  saveNo: { paddingHorizontal: 28, paddingVertical: 10, borderRadius: 10,
+    borderWidth: 1, borderColor: C.faint },
+  saveNoText: { fontSize: 14, fontWeight: '700', color: C.faint },
 
   statsLine: { marginBottom: 20 },
   statsLineText: { fontSize: 13, color: C.muted, textAlign: 'center' },
