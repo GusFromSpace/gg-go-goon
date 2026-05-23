@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
 import { storage } from '@/services/storage';
 
@@ -13,7 +13,7 @@ export default function Welcome3() {
   return (
     <View style={s.container}>
       <View style={s.topRow}>
-        <Text style={s.logo}>GG</Text>
+        <Image source={require('../../assets/icon.png')} style={s.logo} />
       </View>
 
       <View style={s.body}>
@@ -51,7 +51,7 @@ function Dots({ current }: { current: number }) {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg, padding: 24, paddingTop: 60 },
   topRow: { marginBottom: 40 },
-  logo: { fontSize: 24, fontWeight: '900', color: C.cream },
+  logo: { width: 44, height: 44, borderRadius: 10 },
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 20 },
   lockCircle: { width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: C.peach,
     alignItems: 'center', justifyContent: 'center' },

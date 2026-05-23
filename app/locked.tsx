@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { router } from 'expo-router';
 
@@ -15,7 +15,7 @@ export default function Locked() {
 
   return (
     <View style={s.container}>
-      <Text style={s.logo}>GG</Text>
+      <Image source={require('../assets/icon.png')} style={s.logo} />
       <Text style={s.icon}>🔒</Text>
       <Text style={s.label}>Locked</Text>
       <TouchableOpacity style={s.btn} onPress={unlock}>
@@ -27,8 +27,8 @@ export default function Locked() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center', gap: 16 },
-  logo: { fontSize: 28, fontWeight: '900', color: C.cream, position: 'absolute', top: 60, left: 24 },
-  icon: { fontSize: 56 },
+  logo: { width: 140, height: 140, borderRadius: 32 },
+  icon: { fontSize: 48, marginTop: 8 },
   label: { fontSize: 18, color: C.muted },
   btn: { marginTop: 16, borderWidth: 1, borderColor: C.peach, borderRadius: 12,
     paddingHorizontal: 40, paddingVertical: 14 },

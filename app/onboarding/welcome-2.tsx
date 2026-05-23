@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
 
 const C = { bg: '#1a0d0a', cream: '#f6efe4', peach: '#ff9a78', muted: '#9a8270', bg3: '#3a2419', faint: '#5a4a3c' };
@@ -7,7 +7,7 @@ export default function Welcome2() {
   return (
     <View style={s.container}>
       <View style={s.topRow}>
-        <Text style={s.logo}>GG</Text>
+        <Image source={require('../../assets/icon.png')} style={s.logo} />
         <TouchableOpacity onPress={() => router.replace('/')}>
           <Text style={s.skip}>Skip</Text>
         </TouchableOpacity>
@@ -51,7 +51,7 @@ function Dots({ current }: { current: number }) {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg, padding: 24, paddingTop: 60 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 },
-  logo: { fontSize: 24, fontWeight: '900', color: C.cream },
+  logo: { width: 44, height: 44, borderRadius: 10 },
   skip: { fontSize: 14, color: C.faint },
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 },
   art: { fontSize: 64, fontWeight: '900', color: C.cream },

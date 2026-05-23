@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing, Image } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { storage } from '@/services/storage';
@@ -248,7 +248,7 @@ export default function Home() {
 
       {/* Header */}
       <View style={s.header}>
-        <Text style={s.logo}>GG</Text>
+        <Image source={require('../assets/icon.png')} style={s.logo} />
         {phase === 'active' ? (
           <View style={s.activePill}>
             <Text style={s.activePillText}>● ACTIVE</Text>
@@ -391,7 +391,7 @@ const s = StyleSheet.create({
   graceClose: { fontSize: 20, color: C.muted, paddingLeft: 12 },
 
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  logo: { fontSize: 28, fontWeight: '900', color: C.cream, letterSpacing: -1 },
+  logo: { width: 44, height: 44, borderRadius: 10 },
   gear: { fontSize: 20, color: C.faint },
   activePill: { backgroundColor: C.bg2, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: C.peach },
