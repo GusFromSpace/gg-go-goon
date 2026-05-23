@@ -165,9 +165,12 @@ export default function Home() {
     if (Math.random() < 0.25 && !quick) {
       setRecipe(RECIPE_SUGGESTIONS[Math.floor(Math.random() * RECIPE_SUGGESTIONS.length)]);
     }
-    const updated = await storage.recordSession(elapsed);
-    setStats(updated);
-    if (!quick) setTimeout(() => setShowFireworks(false), 1500);
+    if (!quick) {
+      // sub-10s doesn't count — easter egg fires but nothing is recorded
+      const updated = await storage.recordSession(elapsed);
+      setStats(updated);
+      setTimeout(() => setShowFireworks(false), 1500);
+    }
   }
 
   async function handleReset() {
@@ -201,7 +204,7 @@ export default function Home() {
     return '#ff5a8a';
   }
 
-  // 7-day pip strip
+  // 7-day pip strip with per-day session counts
   function getPips() {
     if (!stats) return [];
     const today = new Date(); today.setHours(0,0,0,0);
@@ -210,15 +213,18 @@ export default function Home() {
       const d = new Date(today); d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().slice(0,10);
       const isToday = i === 0;
-      const hasSession = stats.sessions?.some(s => new Date(s.startedAt).toISOString().slice(0,10) === dateStr);
+      const count = stats.sessions?.filter(s =>
+        new Date(s.startedAt).toISOString().slice(0,10) === dateStr
+      ).length ?? 0;
       const isGrace = stats.weeklySkipUsedAt &&
         new Date(stats.weeklySkipUsedAt).toISOString().slice(0,10) === dateStr;
-      pips.push({ dateStr, isToday, hasSession, isGrace });
+      pips.push({ dateStr, isToday, count, isGrace });
     }
     return pips;
   }
 
   const pips = getPips();
+  const todayCount = pips.find(p => p.isToday)?.count ?? 0;
   const isFirstSession = !stats || stats.totalSessions === 0;
   const showGraceBanner = !graceDismissed && stats?.weeklySkipUsedAt &&
     Date.now() - stats.weeklySkipUsedAt < 24 * H;
@@ -288,14 +294,25 @@ export default function Home() {
                   <View key={i} style={s.pipWrap}>
                     <View style={[
                       s.pip,
-                      pip.hasSession && s.pipFilled,
+                      pip.count === 1 && s.pipOne,
+                      pip.count >= 2 && pip.count <= 3 && s.pipFilled,
+                      pip.count >= 4 && s.pipMax,
                       pip.isToday && s.pipToday,
                       !!pip.isGrace && s.pipGrace,
                     ]} />
-                    <Text style={s.pipLabel}>{DAYS[i]}</Text>
+                    {pip.count >= 2 && (
+                      <Text style={s.pipCount}>{pip.count}</Text>
+                    )}
+                    {pip.count < 2 && <Text style={s.pipLabel}>{DAYS[i]}</Text>}
                   </View>
                 ))}
               </View>
+              {todayCount > 0 && (
+                <View style={s.todayRow}>
+                  <Text style={s.todayCount}>{todayCount}×</Text>
+                  <Text style={s.todayLabel}> today</Text>
+                </View>
+              )}
             </>
           )}
         </View>
@@ -322,6 +339,9 @@ export default function Home() {
             <Text style={s.doneText}>GG.</Text>
             {isMarathon && <Text style={s.marathonBadge}>💦 😳 💦</Text>}
             <Text style={s.doneSubtitle}>Good game. Streak: {stats?.streak ?? 1} days 🔥</Text>
+            {todayCount > 1 && (
+              <Text style={s.doneTodayCount}>that's {todayCount}× today 🔥</Text>
+            )}
             {eggMsg && (
               <Text style={s.eggMsg}>{eggMsg}</Text>
             )}
@@ -391,12 +411,23 @@ const s = StyleSheet.create({
   pipRow: { flexDirection: 'row', justifyContent: 'space-between' },
   pipWrap: { alignItems: 'center', gap: 4 },
   pip: { width: 28, height: 28, borderRadius: 8, backgroundColor: C.bg3, borderWidth: 1, borderColor: C.hairline },
+  pipOne:    { backgroundColor: 'rgba(255,154,120,0.45)', borderColor: C.peach },
   pipFilled: { backgroundColor: C.peach, borderColor: C.peach },
+  pipMax:    { backgroundColor: C.peachDeep, borderColor: C.peachDeep,
+               shadowColor: C.peachDeep, shadowOffset: { width: 0, height: 0 },
+               shadowOpacity: 0.8, shadowRadius: 6, elevation: 4 },
   pipToday: { borderColor: C.cream, borderWidth: 2 },
   pipGrace: { backgroundColor: C.bg3, borderColor: C.peach, opacity: 0.6 },
   pipEmpty: { backgroundColor: 'transparent' },
   pipDash: { borderStyle: 'dashed' },
   pipLabel: { fontSize: 10, color: C.faint, fontWeight: '600' },
+  pipCount: { fontSize: 10, color: C.bg, fontWeight: '900' },
+
+  todayRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 12 },
+  todayCount: { fontSize: 28, fontWeight: '900', color: C.peach },
+  todayLabel: { fontSize: 14, color: C.muted },
+
+  doneTodayCount: { fontSize: 14, color: C.peach, fontWeight: '700', marginTop: 2 },
 
   statsLine: { marginBottom: 20 },
   statsLineText: { fontSize: 13, color: C.muted, textAlign: 'center' },
