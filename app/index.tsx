@@ -99,6 +99,7 @@ export default function Home() {
   const [eggMsg, setEggMsg] = useState<string | null>(null);
   const [isMarathon, setIsMarathon] = useState(false);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [showBros, setShowBros] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulse = useRef(new Animated.Value(1)).current;
 
@@ -155,6 +156,7 @@ export default function Home() {
       if (Math.random() < 0.25) {
         setRecipe(RECIPE_SUGGESTIONS[Math.floor(Math.random() * RECIPE_SUGGESTIONS.length)]);
       }
+      if (Math.random() < 0.04) setShowBros(true);
       const updated = await storage.recordSession(elapsed);
       setStats(updated);
       setTimeout(() => setShowFireworks(false), 1500);
@@ -182,6 +184,7 @@ export default function Home() {
     setEggMsg(null);
     setIsMarathon(false);
     setShowSavePrompt(false);
+    setShowBros(false);
   }
 
   function formatTime(s: number) {
@@ -349,6 +352,9 @@ export default function Home() {
             {eggMsg && (
               <Text style={s.eggMsg}>{eggMsg}</Text>
             )}
+            {showBros && (
+              <Text style={s.brosText}>just two bros, congratulating each other on a job well done</Text>
+            )}
             {showSavePrompt && (
               <View style={s.savePrompt}>
                 <Text style={s.saveLabel}>save it?</Text>
@@ -445,6 +451,8 @@ const s = StyleSheet.create({
   todayLabel: { fontSize: 14, color: C.muted },
 
   doneTodayCount: { fontSize: 14, color: C.peach, fontWeight: '700', marginTop: 2 },
+  brosText: { fontSize: 11, color: C.muted, opacity: 0.35, fontStyle: 'italic',
+    textAlign: 'center', maxWidth: 260, marginTop: 8 },
 
   savePrompt: { alignItems: 'center', gap: 12, marginTop: 8 },
   saveLabel: { fontSize: 15, color: C.muted, fontStyle: 'italic' },
