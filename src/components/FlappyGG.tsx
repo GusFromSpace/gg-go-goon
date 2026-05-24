@@ -3,7 +3,10 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Dimensions } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
+
+const BEST_KEY = 'gg:flappy_best';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -40,6 +43,7 @@ export function FlappyGG({ visible, onClose }: { visible: boolean; onClose: () =
   const [birdY, setBirdY] = useState(H * 0.45);
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
+  const bestRef = useRef(0);
   const [pipes, setPipes] = useState<Pipe[]>([]);
 
   const birdYRef    = useRef(H * 0.45);
@@ -48,6 +52,13 @@ export function FlappyGG({ visible, onClose }: { visible: boolean; onClose: () =
   const scoreRef    = useRef(0);
   const frameRef    = useRef<ReturnType<typeof setInterval> | null>(null);
   const gameStateRef= useRef<GameState>('waiting');
+
+  // load persisted best on mount
+  useEffect(() => {
+    AsyncStorage.getItem(BEST_KEY).then(val => {
+      if (val) { const n = parseInt(val, 10); bestRef.current = n; setBest(n); }
+    });
+  }, []);
 
   const reset = useCallback(() => {
     birdYRef.current = H * 0.45;
@@ -155,7 +166,11 @@ export function FlappyGG({ visible, onClose }: { visible: boolean; onClose: () =
     gameStateRef.current = 'dead';
     setGameState('dead');
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    setBest(b => Math.max(b, scoreRef.current));
+    if (scoreRef.current > bestRef.current) {
+      bestRef.current = scoreRef.current;
+      setBest(scoreRef.current);
+      AsyncStorage.setItem(BEST_KEY, String(scoreRef.current));
+    }
   }
 
   useEffect(() => {
