@@ -48,6 +48,16 @@ const LONG_RUN = [
   'we weren\'t worried. we were a little worried.',
 ];
 
+const SCREEN_SMUDGE = [
+  'your camera was on...',
+  'please clean your screen.',
+  'please clean your lens.',
+  'we recommend wiping down your device.',
+  'your front camera has seen things.',
+  'microfiber cloth. just saying.',
+  'screen protector moment.',
+];
+
 // Fireworks particle
 function Particle({ angle, radius, delay }: { angle: number; radius: number; delay: number }) {
   const anim = useRef(new Animated.Value(0)).current;
@@ -151,6 +161,9 @@ export default function Home() {
       setEggMsg(QUICK_FINISH[Math.floor(Math.random() * QUICK_FINISH.length)]);
     } else if (marathon) {
       setEggMsg(LONG_RUN[Math.floor(Math.random() * LONG_RUN.length)]);
+    } else if (elapsed >= 300 && Math.random() < 0.10) {
+      // 5min+ session — the intended use — camera may have been involved
+      setEggMsg(SCREEN_SMUDGE[Math.floor(Math.random() * SCREEN_SMUDGE.length)]);
     }
 
     if (quick) {
