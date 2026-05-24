@@ -6,6 +6,7 @@ import { storage } from '@/services/storage';
 import { notificationService } from '@/services/notifications';
 import { RECIPE_SUGGESTIONS } from '@/content/summons';
 import { ScreenBlush } from '@/components/ScreenBlush';
+import { FlappyGG } from '@/components/FlappyGG';
 import type { AppStats } from '@/types';
 
 const C = {
@@ -100,6 +101,9 @@ export default function Home() {
   const [isMarathon, setIsMarathon] = useState(false);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showBros, setShowBros] = useState(false);
+  const [showFlappy, setShowFlappy] = useState(false);
+  const quickCycles = useRef(0);
+  const lastCycleAt = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulse = useRef(new Animated.Value(1)).current;
 
@@ -150,6 +154,19 @@ export default function Home() {
     }
 
     if (quick) {
+      // track rapid cycles for flappy easter egg
+      const now = Date.now();
+      if (now - lastCycleAt.current < 4000) {
+        quickCycles.current += 1;
+      } else {
+        quickCycles.current = 1;
+      }
+      lastCycleAt.current = now;
+      if (quickCycles.current >= 3) {
+        quickCycles.current = 0;
+        setShowFlappy(true);
+        return;
+      }
       setShowSavePrompt(true); // ask before recording
     } else {
       setShowFireworks(true);
@@ -236,6 +253,8 @@ export default function Home() {
 
   return (
     <View style={s.container}>
+      <FlappyGG visible={showFlappy} onClose={() => { setShowFlappy(false); setPhase('idle'); setElapsed(0); }} />
+
       {/* Blush — quick finish: flash variant; marathon: steady pulse */}
       {phase === 'done' && showSavePrompt && (
         <ScreenBlush variant="flash" intensity="spicy" />
