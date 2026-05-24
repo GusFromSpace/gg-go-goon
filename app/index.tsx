@@ -114,6 +114,7 @@ export default function Home() {
   const [showFlappy, setShowFlappy] = useState(false);
   const quickCycles = useRef(0);
   const lastCycleAt = useRef(0);
+  const startedAtRef = useRef<number>(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulse = useRef(new Animated.Value(1)).current;
 
@@ -129,7 +130,10 @@ export default function Home() {
 
   useEffect(() => {
     if (phase === 'active') {
-      intervalRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+      // derive elapsed from wall clock — stays accurate when app is backgrounded
+      intervalRef.current = setInterval(() => {
+        setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
+      }, 500);
       Animated.loop(Animated.sequence([
         Animated.timing(pulse, { toValue: 1.06, duration: 900, useNativeDriver: true }),
         Animated.timing(pulse, { toValue: 1, duration: 900, useNativeDriver: true }),
@@ -144,6 +148,7 @@ export default function Home() {
 
   async function handleGo() {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    startedAtRef.current = Date.now();
     setPhase('active');
     setElapsed(0);
   }
